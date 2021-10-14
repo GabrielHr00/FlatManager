@@ -1,6 +1,4 @@
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,21 +10,6 @@ public class HausverwaltungSerializationDAO<T> implements HausverwaltungDAO{
     public HausverwaltungSerializationDAO(List<Wohnung> wohnungList, String dateiName) {
         this.setWohnungList(wohnungList);
         this.setDateiName(dateiName);
-    }
-
-    public <T> void serializeObject(T object){
-        try {
-            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(dateiName));
-            stream.writeObject(object);
-            stream.close();
-        } catch (IOException ioex) {
-            System.err.println("Fehler bei Serialisierung: " + ioex.getMessage());
-            System.exit(1);
-        }
-    }
-
-    public <T> void deserializeObject(T object) {
-
     }
 
     @Override
@@ -73,5 +56,32 @@ public class HausverwaltungSerializationDAO<T> implements HausverwaltungDAO{
             throw new IllegalArgumentException("Error: Parameter ungueltig.");
         }
         this.dateiName = dateiName;
+    }
+
+    public void serializeObject(Wohnung wohnung){
+        try {
+            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(this.dateiName));
+            stream.writeObject(wohnung);
+            stream.close();
+        } catch (IOException ioex) {
+            System.err.println("Fehler bei Serialisierung: " + ioex.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public <T> T deserializeObject() {
+        try{
+            ObjectInputStream stream = new ObjectInputStream(new FileInputStream(this.dateiName));
+            T deserializedObject = (T) stream.readObject();
+            stream.close();
+            return deserializedObject;
+        } catch (IOException e) {
+            System.err.println("Fehler bei Deserialisierung: " + e.getMessage());
+            System.exit(1);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Fehler bei Deserialisierung: " + e.getMessage());
+            System.exit(1);
+        }
+        return null;
     }
 }
