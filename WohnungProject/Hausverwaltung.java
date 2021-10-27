@@ -6,51 +6,59 @@ import java.util.stream.Collectors;
 public class Hausverwaltung{
     private HausverwaltungDAO hausverwaltungDAO;
 
+    public Hausverwaltung(String dateiName) {
+        this.hausverwaltungDAO = new HausverwaltungSerializationDAO(dateiName);
+    }
+    
     public List<Wohnung> getAllFlatData(){
-        return hausverwaltungDAO.getWohnungen();
+        return this.hausverwaltungDAO.getWohnungen();
     }
 
     public Wohnung getWohnung(int id){
-        return hausverwaltungDAO.getWohnungbyId(id);
+        return this.hausverwaltungDAO.getWohnungbyId(id);
     }
 
     public void addNewWohnung(Wohnung newWohnung){
-        hausverwaltungDAO.saveWohnung(newWohnung);
+        this.hausverwaltungDAO.saveWohnung(newWohnung);
     }
 
     public void deleteWohnung(int id){
-        hausverwaltungDAO.deleteWohnung(id);
+        this.hausverwaltungDAO.deleteWohnung(id);
     }
 
     public int allWohnungenCount(){
-        return (int) hausverwaltungDAO.getWohnungen().stream().count();
+        return (int) this.hausverwaltungDAO.getWohnungen().stream().count();
     }
 
     public int EWCount(){
-        return (int) hausverwaltungDAO.getWohnungen().stream().filter(e -> e instanceof EigentumsWohnung).count();
+        return (int) this.hausverwaltungDAO.getWohnungen().stream().filter(e -> e instanceof EigentumsWohnung).count();
     }
 
     public int MWCount(){
-        return (int) hausverwaltungDAO.getWohnungen().stream().filter(e -> e instanceof MietWohnung).count();
+        return (int) this.hausverwaltungDAO.getWohnungen().stream().filter(e -> e instanceof MietWohnung).count();
     }
 
     public double averageMonthCostsAllWohnungen(){
-        double temp = hausverwaltungDAO.getWohnungen().stream()
-                .mapToDouble(Wohnung::gesamtKosten)
-                .sum();
+//        double temp = this.hausverwaltungDAO.getWohnungen().stream()
+//                .mapToDouble(Wohnung::gesamtKosten)
+//                .sum();
+        double temp = 0.0;
+        for (var w: this.getAllFlatData()) {
+            temp += w.gesamtKosten();
+        }
         temp /= this.allWohnungenCount();
         return temp;
     }
 
     public List<Integer> getOldestWohnungen(){
-        Wohnung w = hausverwaltungDAO.getWohnungen()
-                .stream()
+        Wohnung w = this.getAllFlatData().stream()
                 .min((e1,e2) -> Integer.compare(Integer.parseInt(e1.getBuildYear()), Integer.parseInt(e2.getBuildYear())))
                 .get();
 
-        List<Wohnung> flats = hausverwaltungDAO.getWohnungen().stream()
-                .filter(e -> e.getId() == w.getId())
+        List<Wohnung> flats = this.hausverwaltungDAO.getWohnungen().stream()
+                .filter(e -> e.getBuildYear().equals(w.getBuildYear()))
                 .collect(Collectors.toList());
+
         List<Integer> ids = flats.stream()
                 .map(e -> e.getId())
                 .collect(Collectors.toList());

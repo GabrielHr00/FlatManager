@@ -1,13 +1,14 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class HausverwaltungSerializationDAO<T> implements HausverwaltungDAO{
+public class HausverwaltungSerializationDAO implements HausverwaltungDAO{
     private List<Wohnung> wohnungList;
     private String dateiName;
 
-    public HausverwaltungSerializationDAO(List<Wohnung> wohnungList, String dateiName) {
+    public HausverwaltungSerializationDAO(String dateiName) {
         this.setWohnungList(wohnungList);
         this.setDateiName(dateiName);
     }
@@ -18,9 +19,13 @@ public class HausverwaltungSerializationDAO<T> implements HausverwaltungDAO{
     }
 
     @Override
-    public Wohnung getWohnungbyId(int idWohnung) {
-        List<Wohnung> wohn = wohnungList.stream().filter(e -> e.getId() == idWohnung).collect(Collectors.toList());
-        return wohn.isEmpty() ? null : wohn.get(0);
+    public Wohnung getWohnungbyId(int idWohnung){
+        try{
+            Wohnung wohnung = wohnungList.stream().filter(e -> e.getId() == idWohnung).collect(Collectors.toList()).get(0);
+            return wohnung;
+        } catch (IndexOutOfBoundsException e){
+            return null;
+        }
     }
 
     @Override
@@ -58,30 +63,33 @@ public class HausverwaltungSerializationDAO<T> implements HausverwaltungDAO{
         this.dateiName = dateiName;
     }
 
-    public void serializeObject(Wohnung wohnung){
+    public void serializeWohnungen(List<Wohnung> wohnungen){
+        File file = new File(this.dateiName);
+        if(file.exists()){
+            file.delete();
+        }
+
         try {
-            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(this.dateiName));
-            stream.writeObject(wohnung);
-            stream.close();
-        } catch (IOException ioex) {
-            System.err.println("Fehler bei Serialisierung: " + ioex.getMessage());
+            ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(this.dateiName, true));
+            writer.writeObject(wohnungen);
+            writer.close();
+        } catch (Exception e) {
+            System.err.println("Fehler bei Serialisierung: " + e.getMessage());
             System.exit(1);
         }
     }
 
-    public <T> T deserializeObject() {
+    public List<Wohnung> deserializeWohnungen() {
+        List<Wohnung> wohnungen = new ArrayList<>();
+
         try{
-            ObjectInputStream stream = new ObjectInputStream(new FileInputStream(this.dateiName));
-            T deserializedObject = (T) stream.readObject();
-            stream.close();
-            return deserializedObject;
-        } catch (IOException e) {
-            System.err.println("Fehler bei Deserialisierung: " + e.getMessage());
-            System.exit(1);
-        } catch (ClassNotFoundException e) {
+            ObjectInputStream reader = new ObjectInputStream(new FileInputStream(this.dateiName));
+            wohnungen = (List<Wohnung>) reader.readObject();
+            reader.close();
+        } catch (Exception e) {
             System.err.println("Fehler bei Deserialisierung: " + e.getMessage());
             System.exit(1);
         }
-        return null;
+        return wohnungen;
     }
 }

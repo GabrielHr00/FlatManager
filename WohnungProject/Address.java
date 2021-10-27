@@ -3,6 +3,7 @@ public class Address {
     private String street;
     private int houseNumber;
     private int top;
+    private final static int PLZ_NUMBERS = 4;
 
     public Address(String plz, String street, int houseNumber, int top) {
         this.setPlz(plz);
@@ -28,7 +29,7 @@ public class Address {
     }
 
     public void setPlz(String plz) {
-        if(plz.length() == 4){
+        if(plz.length() == PLZ_NUMBERS){
             this.plz = plz;
         }
         else{
@@ -52,7 +53,7 @@ public class Address {
     }
 
     public void setTop(int top) {
-        if(top <= 0){
+        if(top < 0){
             throw new IllegalArgumentException("Error: Parameter ungueltig.");
         }
         this.top = top;

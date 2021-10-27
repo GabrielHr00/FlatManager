@@ -5,8 +5,8 @@ public class HausverwaltungClient {
         Scanner sc = new Scanner(System.in);
 
         String[] command = sc.nextLine().split("\\s+");
-        //HausverwaltungSerializationDAO serializeObject = new HausverwaltungSerializationDAO(command[0]);
-        Hausverwaltung controller = new Hausverwaltung();
+        String dateiName = command[0];
+        Hausverwaltung controller = new Hausverwaltung(dateiName);
 
         switch(command[1]){
             case "list":
